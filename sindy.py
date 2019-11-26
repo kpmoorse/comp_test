@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
         return states, dstates
 
-    # Simulate lorenz and generate polynomial library
+    # Run simulation and generate polynomial library
     coeffs = (28,10,8./3)
     states, dstates = sim_lorenz(coeffs=coeffs)
     states += np.random.normal(0, 0.5, states.shape)
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     library, labels = nlp_col(states, order=5)
 
     # Run SINDy and print results
-    Xi, lb = sindy(dstates, library, labels, 0.25)
+    Xi, lb = sindy(dstates, library, labels, 0.35)
     print(Xi)
     print(lb)
 
