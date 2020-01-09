@@ -17,6 +17,7 @@ u_now = np.zeros(dim)
 
 u_now = np.pad(u_now, 1, bc)
 
+kernel = np.array([[0,r**2,0],[r**2,0,r**2],[0,r**2,0]])
 X, Y = np.meshgrid(np.arange(dim[1]), np.arange(dim[0]))
 mask = (Y==50) & ((X<49) | (X>51)) # Single slit
 

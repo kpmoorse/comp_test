@@ -5,7 +5,7 @@ from time import time
 if __name__ == '__main__':
 
     start = int(5e6) # Smallest prime candidate to check
-    N = 100 # Number of candidates to check
+    N = 1000 # Number of candidates to check
 
     # Brute force prime checking
     def check_prime(n, disp=True):
@@ -13,6 +13,7 @@ if __name__ == '__main__':
         for j in range(2, n):
             if n%j == 0:
                 prime = False
+                break
         if disp: print(n, prime)
         return prime
     

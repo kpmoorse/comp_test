@@ -75,7 +75,7 @@ if __name__ == '__main__':
         return s*(y-x), x*(p-z)-y, x*y-b*z
 
     # Simulate Lorenz eqn and return state and derivatives
-    def sim_lorenz(tt=np.arange(0,100,0.01), coeffs=(28,10,8./3)):
+    def sim_lorenz(tt=np.arange(0,100,0.001), coeffs=(28,10,8./3)):
 
         def f(state, t):
             return differential(state, t, coeffs)
@@ -89,12 +89,12 @@ if __name__ == '__main__':
     # Run simulation and generate polynomial library
     coeffs = (28,10,8./3)
     states, dstates = sim_lorenz(coeffs=coeffs)
-    states += np.random.normal(0, 0.5, states.shape)
-    dstates += np.random.normal(0, 5, dstates.shape)
+    # states += np.random.normal(0, 0.25, states.shape)
+    # dstates += np.random.normal(0, 2, dstates.shape)
     library, labels = nlp_col(states, order=5)
 
     # Run SINDy and print results
-    Xi, lb = sindy(dstates, library, labels, 0.35)
+    Xi, lb = sindy(dstates, library, labels, 0.5)
     print(Xi)
     print(lb)
 
