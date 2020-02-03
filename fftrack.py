@@ -61,30 +61,51 @@ class Tracker(object):
         self.x = [] # [3xNx2] Measured object positions
         self.v = [] # [Nx2] First-order estimate of object velocities
         self.c = [] # [2xNx2] Composition maps between object sets: x[i][c[i]]=x[i+1]
+        self.index = 0
 
     def step(self, pos):
 
+        i = self.index
+
         self.x.append(pos.copy())
-        
-        # *** This section needs to be cleaned up ***
-        if len(self.x)>3:
+        if i == 1:
+            self.c.append(self.knn(self.x[0], self.x[1])[0])
+            self.v = self.x[1][self.c[0][1],:] - self.x[0][self.c[0][0],:]
+        elif i == 2:
+            self.c.append(self.knn(self.x[1]+self.v, self.x[2]))
+            self.v = self.x[1][self.c[0][1],:] - self.x[0][self.c[0][0],:]
+        elif i >= 3:
             self.x.pop(0)
-            self.c.append(self.knn(self.x[1], self.x[2]))
+            self.c.append(self.knn(self.x[1]+self.v, self.x[2]))
             self.c.pop(0)
-            self.v = self.x[1] - self.x[0][self.c[0],:]
-        elif len(self.x)>=2:
-            self.c.append(self.knn(self.x[-2], self.x[-1]))
+            self.v = self.x[1][self.c[0][1],:] - self.x[0][self.c[0][0],:]
+
+        self.index += 1
+
+        # # *** This section needs to be cleaned up ***
+        # if len(self.x)>3:
+        #     self.x.pop(0)
+        #     self.c.append(self.knn(self.x[1], self.x[2]))
+        #     self.c.pop(0)
+        #     self.v = self.x[1] - self.x[0][self.c[0],:]
+        # elif len(self.x)>=2:
+        #     self.c.append(self.knn(self.x[-2], self.x[-1]))
 
     def knn(self, vin, vout, thresh=None):
 
         nn = NN()
         nn.fit(vin)
-        res = nn.kneighbors(vout, n_neighbors=1)
+        dist, ix = nn.kneighbors(vout, n_neighbors=1)
+
         if thresh:
-            ix = res[1].T[0][res[0].T[0]<thresh]
+            ix_out = np.array(np.where(dist.T[0]<thresh))[0]
+            print(type(ix_out))
+            ix_in = ix.T[0][ix_out]
         else:
-            ix = res[1].T[0]
-        return ix
+            ix_out = np.arange(len(ix))
+            ix_in = ix.T[0]
+        print(ix_in.shape, ix_out.shape)
+        return ix_in, ix_out
 
     def disp(self):
 
@@ -92,9 +113,11 @@ class Tracker(object):
             print("Velocity data is unavailable; ignoring display command.")
             return
 
-        x_old,y_old = self.x[0][self.c[0],:][self.c[1],:].T
-        x_new,y_new = self.x[1].T
-        vx,vy = self.v[self.c[1],:].T
+        print(self.c[0][0])
+        print(self.c[1][0])
+        x_old,y_old = self.x[1][self.c[1][0],:].T
+        x_new,y_new = self.x[2].T
+        vx,vy = self.v[self.c[1][0],:].T
         # vx,vy = self.v.T
         plt.clf()
         plt.plot(x_new,y_new,'.')
@@ -111,9 +134,9 @@ if __name__ == '__main__':
     noise = Noise()
     tracker = Tracker()
     for i in range(100):
+        swarm.step()
         noise.step(swarm.x)
         tracker.step(noise.x)
-        if len(tracker.v)>0:
+        if tracker.index>3:
             tracker.disp()
         # swarm.disp()
-        swarm.step()

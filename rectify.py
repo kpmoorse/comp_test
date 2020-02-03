@@ -10,7 +10,8 @@ gdim = (7,5)
 s = 0.1
 ctr = (0,0,0.5)
 rot = (0,0)
-r = R.from_euler('xy', (45, 30), degrees=True)
+r = R.from_euler('xy', (15, 30), degrees=True)
+# r = R.from_euler('xy', (0, 0), degrees=True)
 cams = [(-0.25,0,0), (0.25,0,0)]
 
 
@@ -57,30 +58,44 @@ nplots = len(cams)+1
 x, y, z = grid.T
 
 fig = plt.figure()
-ax = fig.add_subplot(1,nplots,1, projection='3d')
-ax.plot(x,y,z,'.')
+ax0 = fig.add_subplot(1,nplots,1, projection='3d')
+ax0.plot(x,y,z,'.')
 for cam in cams:
-    ax.scatter(*cam)
+    ax0.scatter(*cam)
     pass
 
-ax.set_xlim([-1,1])
-ax.set_ylim([-1,1])
-ax.set_zlim([0,2])
+ax0.set_xlim([-1,1])
+ax0.set_ylim([-1,1])
+ax0.set_zlim([0,2])
 
 proj = []
+ax = []
 for i, cam in enumerate(cams):
     proj.append(project(cam, grid))
-    ax = fig.add_subplot(1,nplots,i+2)
+    ax.append(fig.add_subplot(1,nplots,i+2))
     xx, yy = proj[-1].T
-    ax.plot(xx, yy, '.')
+    ax[-1].plot(xx, yy, '.')
     if i==1:
         H,_ = cv2.findHomography(*proj)
         F,_ = cv2.findFundamentalMat(*proj)
         _,H1,H2 = cv2.stereoRectifyUncalibrated(*proj, F, (1280,800))
-        print(H)
-        ax.plot(*append_ones(proj[0]).dot(H)[:,:2].T, '.')
+        ax[-1].plot(*append_ones(proj[1]).dot(H)[:,:2].T, '.')
 
-
-
+P0 = np.array([
+    [1,0,0,0],
+    [0,1,0,0],
+    [0,0,1,0]
+]).astype(float)
+P1 = np.array([
+    [1,0,0,-0.5],
+    [0,1,0,0],
+    [0,0,1,0]
+]).astype(float)
+print(proj[0])
+print(proj[1])
+print(proj[0].shape)
+print(proj[1].shape)
+p4 = cv2.triangulatePoints(proj[0],proj[1],P0,P1)
+print(p4)
 
 plt.show()
