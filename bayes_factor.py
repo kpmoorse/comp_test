@@ -52,7 +52,12 @@ class BayesTest(object):
         # print('Bayes Factor (B12): '+str(B12))
 
         # Compute bootstrapped Bayes factor (bsB) distribution
-        bsB = []n_b
+        bsB = []
+        ii = tqdm(range(int(n_bs))) if progress else range(int(n_bs))
+        for i in ii:
+            # ix = np.random.choice(np.arange(n),int(n/2))
+            ix = np.random.randint(0,n,n)
+            subset = data[ix,:]
             logB = sum(log(M1(subset[:,0], subset[:,1]) / M2(subset[:,0], subset[:,1])))/sqrt(n_data)
             bsB.append(logB)
         bsB = np.array(bsB)
